@@ -12,8 +12,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 # Get and install system updates
-sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get autoremove && sudo apt-get autoclean
 
 # Create a build environment
 cd ~
@@ -29,7 +28,7 @@ cd ~/develop
 git clone --depth 1 https://github.com/mickelson/sfml-pi sfml-pi
 mkdir sfml-pi/build
 cd sfml-pi/build
-cmake .. -j4 -DSFML_RPI=1 -DEGL_INCLUDE_DIR=/opt/vc/include -DEGL_LIBRARY=/opt/vc/lib/libbrcmEGL.so -DGLES_INCLUDE_DIR=/opt/vc/include -DGLES_LIBRARY=/opt/vc/lib/libbrcmGLESv2.so
+cmake .. -DSFML_RPI=1 -DEGL_INCLUDE_DIR=/opt/vc/include -DEGL_LIBRARY=/opt/vc/lib/libbrcmEGL.so -DGLES_INCLUDE_DIR=/opt/vc/include -DGLES_LIBRARY=/opt/vc/lib/libbrcmGLESv2.so
 sudo make install
 sudo ldconfig
 
@@ -55,4 +54,5 @@ sudo make install USE_GLES=1
 cd ~
 rm -r -f ./develop
 
-sudo reboot
+echo "Attract Mode with MMAL Build Complete!"
+# sudo reboot

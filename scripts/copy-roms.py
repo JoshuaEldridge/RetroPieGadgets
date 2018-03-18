@@ -4,71 +4,90 @@ from os import path
 from os import access
 import sys
 import shutil
+import argparse
 
-files_to_copy = {}
+class is_readable(argparse.Action):
+    def __call__(self, parser, namespace, values, mode, option_string=None):
+        prospective_dir=values
+        if not os.path.isdir(prospective_dir):
+            raise argparse.ArgumentError(self, "is_readable: {0} is not a valid path".format(prospective_dir))
+        if os.access(prospective_dir, os.R_OK):
+            setattr(namespace,self.dest,prospective_dir)
+        else:
+            raise argparse.ArgumentError(self, "is_readable: {0} is not a readable directory".format(prospective_dir))
 
-games_list = '/home/pi/genesis-best.txt'
-console = 'megadrive/'
+class is_writable(argparse.Action):
+    def __call__(self, parser, namespace, values, mode, option_string=None):
+        prospective_dir=values
+        if not os.path.isdir(prospective_dir):
+            raise argparse.ArgumentError(self, "is_writable: {0} is not a valid path".format(prospective_dir))
+        if os.access(prospective_dir, os.W_OK):
+            setattr(namespace,self.dest,prospective_dir)
+        else:
+            raise argparse.ArgumentError(self, "is_writable: {0} is not a writable directory".format(prospective_dir))
+            
+parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
+                                     description="This program will reference a file containing a list of roms and copy those roms and all of the associated metadata from a specified metadata from one location to another.")
+parser.add_argument("-f", "--filename", type=argparse.FileType('r'), required=True,
+                    help="path to file containing the list of games")
+parser.add_argument("-c", "--console", choices=['nes', 'snes', 'megadrive'], required=True,
+                    help="name of the console folder")
+parser.add_argument("-i", "--input_dir", required=True, action=is_readable,
+                    help="name of the root folder for roms and metadata (eg: /usb/roms/)")
+parser.add_argument("-o", "--output_dir", action=is_writable,
+                    help="name of the console folder (eg: /home/pi/RetroPie/roms/)")
+parser.add_argument("-v", "--verbose", action="store_true",
+                    help="print progress and output to screen")
 
-input_rom_dir = '/home/pi/usb/home/pi/RetroPie/roms/'
-output_rom_dir = '/home/pi/RetroPie/roms/'
+args = parser.parse_args()
 
-binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png'}
+args.filename
+args.console
+args.input_dir
+args.output_dir
 
-in_console = input_rom_dir+console
-out_console = output_rom_dir+console
-
-# Validate the directories all exist as expected and are writable etc.
-# Want to check that the intial directories exist first, as they are standard
-# to RetroPie.
-
-def validate_dirs(dir_list = []):
-	for d in dir_list:
-		if not path.exists(d):
-			sys.exit('Directory ' + str(d) + ' does not exist! Check that the path is correct.')
-
-	for d in dir_list:
-		if not access(d, os.W_OK):
-			sys.exit('Directory ' + str(d) + ' is not writable!')
-
-validate_dirs([input_rom_dir, output_rom_dir, in_console, out_console])
-
-for folder, extension in binary_metadata_folders.items():
-	if not path.exists(out_console+folder):
-		os.makedirs(out_console+folder)
-
-# Now that the directories are all clear, process the input file
-# with the list of games for the console.
+in_console = path.join(args.input_dir, args.console)
+out_console = path.join(args.output_dir, args.console)
 
 # This function will take in the original rom name, with full system
 # path and return the same with a new extension (like mp4)
 
 def get_filename(romname, extension):
-	return path.basename(path.splitext(romname)[0])+extension
-	
+    return path.basename(path.splitext(romname)[0])+extension
 
-games = open(games_list, 'r').read().splitlines()
+files_to_copy = {}
+
+binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png','marquee/': '.png'}
+
+for folder, extension in binary_metadata_folders.items():
+    if not path.exists(path.join(out_console,folder)):
+        os.makedirs(path.join(out_console,folder))
+        print 'creating folder: ' + str(path.join(out_console,folder))
+
+# Now that the directories and permissions are all clear, process the input file
+# with the list of games for the console.
+
+games = args.filename.read().splitlines()
 
 for i in games:
 
-	in_rom = in_console+i
-	out_rom = out_console+i
+    in_rom = path.join(in_console, i)
+    out_rom = path.join(out_console, i)
 
-	print "Copying ..."
+    print "Copying ..."
 
-	if not path.exists(out_rom):
-		print in_rom + " to " + out_rom
-		shutil.copyfile(in_rom, out_rom)
-	else:
-		print 'File ' + out_rom + ' exists. Skipping copy.'
+    if not path.exists(out_rom):
+        print in_rom + " to " + out_rom
+        shutil.copyfile(in_rom, out_rom)
+    else:
+        print 'File ' + out_rom + ' exists. Skipping copy.'
 
-	for folder,ext in binary_metadata_folders.items():
-		metadata_file = get_filename(i, ext)
-		in_filepath = in_console+folder+metadata_file
-		out_filepath = out_console+folder+metadata_file
-		if not path.exists(out_filepath):
-			print in_filepath + " to " + in_filepath
-			shutil.copyfile(in_filepath, out_filepath)
-		else:
-			print 'File ' + out_filepath + ' exists. Skipping copy.'
-	
+    for folder, ext in binary_metadata_folders.items():
+        metadata_file = get_filename(i, ext)
+        in_filepath = path.join(in_console, folder, metadata_file)
+        out_filepath = path.join(out_console, folder, metadata_file)
+        if not path.exists(out_filepath):
+            print in_filepath + " to " + in_filepath
+            shutil.copyfile(in_filepath, out_filepath)
+        else:
+            print 'File ' + out_filepath + ' exists. Skipping copy.'
