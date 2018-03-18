@@ -1,0 +1,4 @@
+-f=../gamelists/snes-best.txt
+-c=snes
+-i=/Users/josh/Downloads/
+-o=/Users/josh/Desktop
