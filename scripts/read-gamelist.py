@@ -2,14 +2,18 @@
 
 
 from lxml import etree
-infile = open("gamelist.xml", 'r')
+infile = open("../gamelists/sega-genesis-nointro-gamelist.xml", 'r')
 
 context = etree.iterparse(infile, events=("start", "end"))
 #context = etree.iterparse(infile, events=("start", "end"), tag="name")
 
 for event, element in context:
     if event == "start":
-        print element.tag, element.text
+        #print element.tag, element.text
+        if element.tag == "name":
+            name=element.text
+        if element.tag == "rating" and float(element.text) > 0.8:
+            print name, type(element.text), element.text
 #        print 'Event:', event
 #        print 'Element Tag:', element.tag
 #        print 'Element Text:', element.text

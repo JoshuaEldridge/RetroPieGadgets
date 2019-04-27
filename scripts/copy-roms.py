@@ -46,7 +46,8 @@ args.console
 args.input_dir
 args.output_dir
 
-in_console = path.join(args.input_dir, args.console)
+#in_console = path.join(args.input_dir, args.console)
+in_console = args.input_dir
 out_console = path.join(args.output_dir, args.console)
 
 # This function will take in the original rom name, with full system
@@ -57,7 +58,8 @@ def get_filename(romname, extension):
 
 files_to_copy = {}
 
-binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png', 'images/':'.png'}
+#binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png', 'images/':'.png'}
+binary_metadata_folders = {}
 
 for folder, extension in binary_metadata_folders.items():
     if not path.exists(path.join(out_console,folder)):
