@@ -25,12 +25,12 @@ class is_writable(argparse.Action):
             setattr(namespace,self.dest,prospective_dir)
         else:
             raise argparse.ArgumentError(self, "is_writable: {0} is not a writable directory".format(prospective_dir))
-            
+
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
                                      description="This program will reference a file containing a list of roms and copy those roms and all of the associated metadata from a specified metadata from one location to another.")
 parser.add_argument("-f", "--filename", type=argparse.FileType('r'), required=True,
                     help="path to file containing the list of games")
-parser.add_argument("-c", "--console", choices=['nes', 'snes', 'megadrive'], required=True,
+parser.add_argument("-c", "--console", choices=['nes', 'snes', 'genesis'], required=True,
                     help="name of the console folder")
 parser.add_argument("-i", "--input_dir", required=True, action=is_readable,
                     help="name of the root folder for roms and metadata (eg: /usb/roms/)")
@@ -57,7 +57,7 @@ def get_filename(romname, extension):
 
 files_to_copy = {}
 
-binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png','marquee/': '.png'}
+binary_metadata_folders = {'snap/':'.mp4', 'wheel/':'.png', 'boxart/':'.png', 'images/':'.png'}
 
 for folder, extension in binary_metadata_folders.items():
     if not path.exists(path.join(out_console,folder)):
@@ -88,6 +88,9 @@ for i in games:
         out_filepath = path.join(out_console, folder, metadata_file)
         if not path.exists(out_filepath):
             print in_filepath + " to " + in_filepath
-            shutil.copyfile(in_filepath, out_filepath)
+            if path.exists(in_filepath):
+                shutil.copyfile(in_filepath, out_filepath)
+            else:
+                print 'File ' + in_filepath + ' not found.'
         else:
             print 'File ' + out_filepath + ' exists. Skipping copy.'
