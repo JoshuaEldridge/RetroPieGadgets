@@ -1,4 +1,4 @@
--f=../gamelists/nes-trimmed.txt
+-f=../gamelists/nes-nointro-final-games.txt
 -c=nes
--i=/media/josh/NTFS450GB/retropie/RetroPie/roms/
+-i=/media/josh/NTFS450GB/retropie/NoIntro2018/No-Intro 2018/Nintendo - Nintendo Entertainment System [headered]/
 -o=/home/josh/Downloads/retropie/roms/
