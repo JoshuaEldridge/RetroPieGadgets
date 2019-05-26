@@ -78,11 +78,11 @@ for i in games:
 
     print "Copying ..."
 
-    if not path.exists(out_rom):
+    if not path.exists(out_rom) and path.exists(in_rom):
         print in_rom + " to " + out_rom
         shutil.copyfile(in_rom, out_rom)
     else:
-        print 'File ' + out_rom + ' exists. Skipping copy.'
+        print 'Error: ' + out_rom + ' exists. Or ' + in_rom + ' not found. Skipping copy.'
 
     for folder, ext in binary_metadata_folders.items():
         metadata_file = get_filename(i, ext)
